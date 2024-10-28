@@ -49,9 +49,9 @@ project/
 ### Members
 | 이해강 | 조재만 | 이진우 | 성의인 | 정원정 |
 |:--:|:--:|:--:|:--:|:--:|
-| <img src="https://github.com/user-attachments/assets/aad9eeae-db0e-41ac-a5ee-d4f12bb9f135" alt="이해강" height="150" width="150"> | <img src="https://github.com/user-attachments/assets/b5d74dd3-d7cf-4697-b8e6-d7047e3f0922" alt="조재만" height="150" width="150"> | <img src="https://github.com/user-attachments/assets/998386df-549b-4069-8a2e-07e3ebe4f9a1" alt="이진우" height="150" width="150"> | <img src="https://github.com/user-attachments/assets/604942d4-a6aa-494e-8841-c89f20cef4a6" alt="성의인" height="150" width="150"> | <img src="https://github.com/user-attachments/assets/7274e65e-1a32-4d88-bfa6-c36bac47a2f0" alt="정원정" height="150" width="150"> |
+| <img src="https://github.com/user-attachments/assets/aad9eeae-db0e-41ac-a5ee-d4f12bb9f135" alt="이해강" height="150" width="150"> | <img src="https://github.com/user-attachments/assets/b5d74dd3-d7cf-4697-b8e6-d7047e3f0922" alt="조재만" height="150" width="150"> | <img src="https://github.com/user-attachments/assets/63d1f219-7c86-4591-9183-6f599684a338" alt="이진우" height="150" width="150"> | <img src="https://github.com/user-attachments/assets/604942d4-a6aa-494e-8841-c89f20cef4a6" alt="성의인" height="150" width="150"> | <img src="https://github.com/user-attachments/assets/7274e65e-1a32-4d88-bfa6-c36bac47a2f0" alt="정원정" height="150" width="150"> |
 |[Github](https://github.com/lazely)|[Github](https://github.com/PGSammy)|[Github](https://github.com/MUJJINUNGAE)|[Github](https://github.com/EuiInSeong)|[Github](https://github.com/wonjeongjeong)|
-|lz0136@naver.com|gaemanssi2@naver.com|a01041206201@gmail.com|see8420@naver.com|wj3714@naver.com|
+|lz0136@naver.com|gaemanssi2@naver.com|dlvy9@naver.com|see8420@naver.com|wj3714@naver.com|
 
 ### Members' Role
 
