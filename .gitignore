@@ -1,2 +1,6 @@
-data/
+# data/
+*.tar.gz
+*.jpg
+
 pths/
+__pycache__/
