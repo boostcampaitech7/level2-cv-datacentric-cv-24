@@ -10,27 +10,31 @@
 - 총 이미지 수 : 글자가 포함된 JPG 이미지 (학습 총 400장, 테스트 총 120장)
 
 ### Project Structure (프로젝트 구조)
-<!--
 ```plaintext
-project/
-├── public/
-│   ├── index.html           # HTML 템플릿 파일
-│   └── favicon.ico          # 아이콘 파일
-├── src/
-│   ├── assets/              # 이미지, 폰트 등 정적 파일
-│   ├── components/          # 재사용 가능한 UI 컴포넌트
-│   ├── hooks/               # 커스텀 훅 모음
-│   ├── pages/               # 각 페이지별 컴포넌트
-│   ├── App.js               # 메인 애플리케이션 컴포넌트
-│   ├── index.js             # 엔트리 포인트 파일
-│   ├── index.css            # 전역 css 파일
-│   ├── firebaseConfig.js    # firebase 인스턴스 초기화 파일
-│   package-lock.json    # 정확한 종속성 버전이 기록된 파일로, 일관된 빌드를 보장
-│   package.json         # 프로젝트 종속성 및 스크립트 정의
-├── .gitignore               # Git 무시 파일 목록
-└── README.md                # 프로젝트 개요 및 사용법
+code
+└─  model.py            # EAST 모델이 정의된 파일입니다.
+└─  loss.py             # 학습을 위한 loss function이 정의되어 있는 파일입니다.
+└─  train.py            # 모델의 학습 절차가 정의되어 있는 파일입니다.
+└─  inference.py        # 모델의 추론 절차가 정의되어 있는 파일입니다.
+└─  dataset.py          # 이미지와 글자 영역의 정보 등을 제공하는 데이터셋이 정의되어 있는 파일입니다.
+└─  detect.py           # 모델의 추론에 필요한 기타 함수들이 정의되어 있는 파일입니다.
+└─  deteval.py          # DetEval 평가를 위한 함수들이 정의되어 있는 파일입니다.
+└─  east_dataset.py     # EAST 학습에 필요한 형식의 데이터셋이 정의되어 있는 파일입니다.
+└─  requirements.txt    # 패키지 설치를 위한 파일입니다.
+└─  pth/                # ImageNet 사전학습 가중치가 들어있는 폴더입니다.
+└─  data/
+    └─ chinese_receipt/
+    │  └─ ufo
+    │  │    └─ train.json
+    │  │    └─ test.jsons
+    │  │    └─ sample_submission.csv
+    │  └─ images
+    │        └─ train/
+    │        └─ test/
+    └─ japanses_receipt/
+    └─ thai_receipt/
+    └─ vietnamese_receipt/
 ```
--->
 
 ### 협업 tools
 - Slack, Notion, Github, Wandb
