@@ -7,6 +7,7 @@ import torch
 import numpy as np
 import cv2
 import albumentations as A
+import pickle
 from torch.utils.data import Dataset
 from shapely.geometry import Polygon
 from numba import njit
@@ -420,3 +421,18 @@ class SceneTextDataset(Dataset):
         roi_mask = generate_roi_mask(image, vertices, labels)
 
         return image, word_bboxes, roi_mask
+
+class PickleEASTDataset(Dataset):
+    def __init__(self, pickle_path):
+        """
+        Args:
+            pickle_path: pickle 파일의 경로 (EASTDataset으로 변환된 데이터가 저장된 경로)
+        """
+        with open(pickle_path, 'rb') as f:
+            self.data = pickle.load(f)
+    
+    def __len__(self):
+        return len(self.data)
+    
+    def __getitem__(self, idx):
+        return self.data[idx]

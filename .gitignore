@@ -1,6 +1,8 @@
 # data/
 *.tar.gz
 *.jpg
-
+**/*.pth
 pths/
+thai_receipt/
 __pycache__/
+trained_models/latest.pth/
