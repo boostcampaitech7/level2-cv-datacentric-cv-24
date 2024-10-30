@@ -342,6 +342,8 @@ class SceneTextDataset(Dataset):
                  crop_size=1024,
                  ignore_under_threshold=10,
                  drop_under_threshold=1,
+                 custom_augmentation=None,
+                 image_list=None,
                  color_jitter=True,
                  normalize=True):
         self._lang_list = ['chinese', 'japanese', 'thai', 'vietnamese']
@@ -355,13 +357,20 @@ class SceneTextDataset(Dataset):
                 total_anno['images'][im] = anno['images'][im]
 
         self.anno = total_anno
-        self.image_fnames = sorted(self.anno['images'].keys())
+
+        # image_list가 주어진 경우 해당 이미지만 사용
+        if image_list is not None:
+            self.image_fnames = sorted([fname for fname in image_list if fname in self.anno['images']])
+        else:
+            self.image_fnames = sorted(self.anno['images'].keys())
 
         self.image_size, self.crop_size = image_size, crop_size
         self.color_jitter, self.normalize = color_jitter, normalize
 
         self.drop_under_threshold = drop_under_threshold
         self.ignore_under_threshold = ignore_under_threshold
+
+        self.custom_augmentation = custom_augmentation
 
     def _infer_dir(self, fname):
         lang_indicator = fname.split('.')[1]
@@ -414,6 +423,8 @@ class SceneTextDataset(Dataset):
             funcs.append(A.ColorJitter())
         if self.normalize:
             funcs.append(A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)))
+        if self.custom_augmentation:
+            funcs.append(self.custom_augmentation)
         transform = A.Compose(funcs)
 
         image = transform(image=image)['image']
@@ -429,10 +440,12 @@ class PickleEASTDataset(Dataset):
             pickle_path: pickle 파일의 경로 (EASTDataset으로 변환된 데이터가 저장된 경로)
         """
         with open(pickle_path, 'rb') as f:
-            self.data = pickle.load(f)
+            data = pickle.load(f)
+        self.samples = data['data']
+        self.image_fnames = data['image_fnames']
     
     def __len__(self):
-        return len(self.data)
+        return len(self.samples)
     
     def __getitem__(self, idx):
-        return self.data[idx]
+        return self.samples[idx]
