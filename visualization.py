@@ -27,7 +27,7 @@ nation_dict = {
 
 def save_vis_to_img(save_dir: str | os.PathLike, inference_dir: str | os.PathLike = 'output.csv') -> None:
     if not os.path.exists(save_dir):
-        os.makedirs(save_dir, exist_ok=True)    
+        os.makedirs(save_dir, exist_ok=True)   
     data = read_json(inference_dir)
     for im, points in data['images'].items():
         # change to 'train' for train dataset 
@@ -50,4 +50,4 @@ def save_vis_to_img(save_dir: str | os.PathLike, inference_dir: str | os.PathLik
 if __name__  == "__main__":
     args = parse_arg()
 
-    save_vis_to_img(save_dir=args.save_dir)
+    save_vis_to_img(save_dir=args.save_dir, inference_dir=args.inference_dir)
