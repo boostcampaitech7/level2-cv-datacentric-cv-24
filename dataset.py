@@ -346,7 +346,7 @@ class SceneTextDataset(Dataset):
                  image_list=None,
                  color_jitter=True,
                  normalize=True):
-        self._lang_list = ['chinese', 'japanese', 'thai', 'vietnamese','medical']
+        self._lang_list = ['chinese', 'japanese', 'thai', 'vietnamese']
         self.root_dir = root_dir
         self.split = split
         total_anno = dict(images=dict())
