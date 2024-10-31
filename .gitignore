@@ -3,3 +3,7 @@ pths/
 thai_receipt/
 trained_models/
 __pycache__
+wandb/
+trained_models/
+**/*.parquet
+nohup.out

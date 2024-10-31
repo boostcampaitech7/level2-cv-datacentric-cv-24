@@ -1,8 +1,0 @@
-{"time":"2024-10-30T11:49:30.441578295+08:00","level":"INFO","msg":"using version","core version":"0.18.5"}
-{"time":"2024-10-30T11:49:30.441595945+08:00","level":"INFO","msg":"created symlink","path":"/data/ephemeral/home/level2-cv-datacentric-cv-24/wandb/run-20241030_114930-2w0o7ore/logs/debug-core.log"}
-{"time":"2024-10-30T11:49:30.544155957+08:00","level":"INFO","msg":"created new stream","id":"2w0o7ore"}
-{"time":"2024-10-30T11:49:30.544202173+08:00","level":"INFO","msg":"stream: started","id":"2w0o7ore"}
-{"time":"2024-10-30T11:49:30.544300396+08:00","level":"INFO","msg":"sender: started","stream_id":"2w0o7ore"}
-{"time":"2024-10-30T11:49:30.544331519+08:00","level":"INFO","msg":"handler: started","stream_id":{"value":"2w0o7ore"}}
-{"time":"2024-10-30T11:49:30.544268955+08:00","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"2w0o7ore"}}
-{"time":"2024-10-30T11:49:30.897098212+08:00","level":"INFO","msg":"Starting system monitor"}
