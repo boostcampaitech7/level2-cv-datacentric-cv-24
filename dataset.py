@@ -392,7 +392,7 @@ class SceneTextDataset(Dataset):
         elif lang_indicator == 'vi':
             lang = 'vietnamese'
         else:
-            raise ValueError
+            lang = 'medical'
         return osp.join(self.root_dir, f'{lang}_receipt', 'img', self.split)
     def __len__(self):
         return len(self.image_fnames)
