@@ -6,6 +6,10 @@ pths/
 thai_receipt/
 __pycache__/
 trained_models/latest.pth/
+<<<<<<< HEAD
+predictions/
+=======
 wandb/
 **/*.parquet
 nohup.out
+>>>>>>> 3a200fc7a40af9781fd97ad5fefd051f514e517f
