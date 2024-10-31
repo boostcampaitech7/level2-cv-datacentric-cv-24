@@ -1,9 +1,11 @@
-data/
+# data/
+*.tar.gz
+*.jpg
+**/*.pth
 pths/
 thai_receipt/
-trained_models/
-__pycache__
+__pycache__/
+trained_models/latest.pth/
 wandb/
-trained_models/
 **/*.parquet
 nohup.out

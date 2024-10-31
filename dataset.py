@@ -10,13 +10,14 @@ import albumentations as A
 import pickle
 from torch.utils.data import Dataset
 from shapely.geometry import Polygon
+from numba import njit
 
-
+@njit
 def cal_distance(x1, y1, x2, y2):
     '''calculate the Euclidean distance'''
     return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
 
-
+@njit
 def move_points(vertices, index1, index2, r, coef):
     '''move the two points to shrink edge
     Input:
@@ -49,7 +50,7 @@ def move_points(vertices, index1, index2, r, coef):
         vertices[y2_index] += ratio * length_y
     return vertices
 
-
+@njit
 def shrink_poly(vertices, coef=0.3):
     '''shrink the text region
     Input:
@@ -79,7 +80,7 @@ def shrink_poly(vertices, coef=0.3):
     v = move_points(v, 3 + offset, 4 + offset, r, coef)
     return v
 
-
+@njit
 def get_rotate_mat(theta):
     '''positive theta value means rotate clockwise'''
     return np.array([[math.cos(theta), -math.sin(theta)], [math.sin(theta), math.cos(theta)]])
@@ -101,7 +102,7 @@ def rotate_vertices(vertices, theta, anchor=None):
     res = np.dot(rotate_mat, v - anchor)
     return (res + anchor).T.reshape(-1)
 
-
+@njit
 def get_boundary(vertices):
     '''get the tight boundary around given vertices
     Input:
@@ -116,7 +117,7 @@ def get_boundary(vertices):
     y_max = max(y1, y2, y3, y4)
     return x_min, x_max, y_min, y_max
 
-
+@njit
 def cal_error(vertices):
     '''default orientation is x1y1 : left-top, x2y2 : right-top, x3y3 : right-bot, x4y4 : left-bot
     calculate the difference between the vertices orientation and default orientation
@@ -131,7 +132,7 @@ def cal_error(vertices):
           cal_distance(x3, y3, x_max, y_max) + cal_distance(x4, y4, x_min, y_max)
     return err
 
-
+@njit
 def find_min_rect_angle(vertices):
     '''find the best angle to rotate poly and obtain min rectangle
     Input:
@@ -231,7 +232,7 @@ def crop_img(img, vertices, labels, length):
     new_vertices[:,[1,3,5,7]] -= start_h
     return region, new_vertices
 
-
+@njit
 def rotate_all_pixels(rotate_mat, anchor_x, anchor_y, length):
     '''get rotated locations of all pixels for next stages
     Input:
@@ -341,6 +342,8 @@ class SceneTextDataset(Dataset):
                  crop_size=1024,
                  ignore_under_threshold=10,
                  drop_under_threshold=1,
+                 custom_augmentation=None,
+                 image_list=None,
                  color_jitter=True,
                  normalize=True):
         self._lang_list = ['chinese', 'japanese', 'thai', 'vietnamese','medical']
@@ -354,13 +357,20 @@ class SceneTextDataset(Dataset):
                 total_anno['images'][im] = anno['images'][im]
 
         self.anno = total_anno
-        self.image_fnames = sorted(self.anno['images'].keys())
+
+        # image_list가 주어진 경우 해당 이미지만 사용
+        if image_list is not None:
+            self.image_fnames = sorted([fname for fname in image_list if fname in self.anno['images']])
+        else:
+            self.image_fnames = sorted(self.anno['images'].keys())
 
         self.image_size, self.crop_size = image_size, crop_size
         self.color_jitter, self.normalize = color_jitter, normalize
 
         self.drop_under_threshold = drop_under_threshold
         self.ignore_under_threshold = ignore_under_threshold
+
+        self.custom_augmentation = custom_augmentation
 
     def _infer_dir(self, fname):
         lang_indicator = fname.split('.')[1]
@@ -413,6 +423,8 @@ class SceneTextDataset(Dataset):
             funcs.append(A.ColorJitter())
         if self.normalize:
             funcs.append(A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)))
+        if self.custom_augmentation:
+            funcs.append(self.custom_augmentation)
         transform = A.Compose(funcs)
 
         image = transform(image=image)['image']
@@ -428,10 +440,12 @@ class PickleEASTDataset(Dataset):
             pickle_path: pickle 파일의 경로 (EASTDataset으로 변환된 데이터가 저장된 경로)
         """
         with open(pickle_path, 'rb') as f:
-            self.data = pickle.load(f)
+            data = pickle.load(f)
+        self.samples = data['data']
+        self.image_fnames = data['image_fnames']
     
     def __len__(self):
-        return len(self.data)
+        return len(self.samples)
     
     def __getitem__(self, idx):
-        return self.data[idx]
+        return self.samples[idx]
