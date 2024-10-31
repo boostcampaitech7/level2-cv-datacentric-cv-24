@@ -354,7 +354,16 @@ class SceneTextDataset(Dataset):
             with open(osp.join(root_dir, '{}_receipt/ufo/{}.json'.format(nation, split)), 'r', encoding='utf-8') as f:
                 anno = json.load(f)
             for im in anno['images']:
-                total_anno['images'][im] = anno['images'][im]
+                # null 이나 "" 삭제하고 데이터 로드 하기
+                # valid_words = {}
+                # for word_id, word_info in anno['images'][im]['words'].items():
+                #     if word_info.get('transcription') not in [None, ""]:
+                #         valid_words[word_id] = word_info
+                
+                # if valid_words:
+                #     total_anno['images'][im] = anno['images'][im]
+                #     total_anno['images'][im]['words'] = valid_words
+                total_anno['images'][im] = anno['images'][im] # null 이용 시에는 이거 주석처리하고 사용
 
         self.anno = total_anno
 
