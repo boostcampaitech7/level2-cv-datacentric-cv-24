@@ -114,8 +114,8 @@ def do_training(data_dir, model_dir, device, image_size, input_size, num_workers
         os.makedirs(model_dir)
 
     if use_pickle:
-        pickle_train_path = osp.join(data_dir, 'east_dataset_train_*.pkl')
-        pickle_val_path = osp.join(data_dir, 'east_dataset_val_*.pkl')
+        pickle_train_path = osp.join(data_dir, 'east_dataset_train_2048_1024.pkl')
+        pickle_val_path = osp.join(data_dir, 'east_dataset_val_2048_1024.pkl')
 
         if os.path.exists(pickle_train_path) and os.path.exists(pickle_val_path):
             print("Loading preprocessed datasets from pickle")
