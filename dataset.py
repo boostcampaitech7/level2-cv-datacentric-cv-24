@@ -355,16 +355,7 @@ class SceneTextDataset(Dataset):
             with open(osp.join(root_dir, '{}_receipt/ufo/{}.json'.format(nation, split)), 'r', encoding='utf-8') as f:
                 anno = json.load(f)
             for im in anno['images']:
-                # null 이나 "" 삭제하고 데이터 로드 하기
-                valid_words = {}
-                for word_id, word_info in anno['images'][im]['words'].items():
-                    if word_info.get('transcription') not in [None, ""]:
-                        valid_words[word_id] = word_info
-                
-                if valid_words:
-                    total_anno['images'][im] = anno['images'][im]
-                    total_anno['images'][im]['words'] = valid_words
-                # total_anno['images'][im] = anno['images'][im] # null 이용 시에는 이거 주석처리하고 사용
+                total_anno['images'][im] = anno['images'][im] # null 이용 시에는 이거 주석처리하고 사용
 
         self.anno = total_anno
 
@@ -460,9 +451,9 @@ class PickleDataset(Dataset):
             data = pickle.load(f)
             
         self.images = data['images']
+        self.roi_masks = data['roi_masks']
         self.score_maps = data['score_maps']
         self.geo_maps = data['geo_maps']
-        self.roi_masks = data['roi_masks']
         
         print(f"Loaded {len(self.images)} samples")
         
@@ -483,13 +474,7 @@ class PickleDataset(Dataset):
         # augmentation 적용
         funcs = []
         if self.color_jitter:
-            funcs.append(A.ColorJitter(
-                brightness=(0.0, 0.5),
-                contrast=(0.0, 0.5),
-                saturation=(0.0, 0.5),
-                hue=(-0.25, 0.25),
-                p=1.0
-            ))
+            funcs.append(A.ColorJitter(0.5, 0.5, 0.5, 0.25))
         if self.normalize:
             funcs.append(A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)))
         if funcs:
@@ -502,7 +487,7 @@ class PickleDataset(Dataset):
 
         # ROI 마스크 크기 조정 및 차원 처리
         mask_size = (int(image.shape[1] * self.map_scale), int(image.shape[0] * self.map_scale))
-        roi_mask = cv2.resize(roi_mask, dsize=mask_size, interpolation=cv2.INTER_NEAREST)
+        roi_mask = cv2.resize(roi_mask, dsize=mask_size)
         
         # 차원 처리
         if roi_mask.ndim == 2:

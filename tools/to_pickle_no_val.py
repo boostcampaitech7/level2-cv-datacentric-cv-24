@@ -57,22 +57,22 @@ def preprocessing(
     total_anno = dict(images=dict())
     
     # json 파일을 읽는 부분
-    json_name = 'train.json'  # 항상 train.json을 읽습니다
+    json_name = 'train_2.json'  # 항상 train.json을 읽습니다
 
     for nation in lang_list:
         json_path = osp.join(root_dir, f'{nation}_receipt/ufo/{json_name}')
         with open(json_path, 'r', encoding='utf-8') as f:
             anno = json.load(f)
         for im in anno['images']:
-            valid_words = {}
-            for word_id, word_info in anno['images'][im]['words'].items():
-                if word_info.get('transcription') not in [None, ""]:
-                    valid_words[word_id] = word_info
+            # valid_words = {}
+            # for word_id, word_info in anno['images'][im]['words'].items():
+            #     if word_info.get('transcription') not in [None, ""]:
+            #         valid_words[word_id] = word_info
             
-            if valid_words:
-                total_anno['images'][im] = anno['images'][im]
-                total_anno['images'][im]['words'] = valid_words
-            # total_anno['images'][im] = anno['images'][im]
+            # if valid_words:
+            #     total_anno['images'][im] = anno['images'][im]
+            #     total_anno['images'][im]['words'] = valid_words
+            total_anno['images'][im] = anno['images'][im]
 
     # train/validation 분할
     train_images, val_images = create_stratified_split(total_anno, train_ratio)
