@@ -14,6 +14,7 @@ from torch import cuda
 from torch.utils.data import DataLoader
 from torch.optim import lr_scheduler
 from tqdm import tqdm
+import warnings
 import albumentations as A
 
 from east_dataset import EASTDataset
@@ -22,6 +23,7 @@ from model import EAST
 from utils import AverageMeter, get_gt_bboxes, get_pred_bboxes
 from deteval import calc_deteval_metrics
 
+warnings.filterwarnings("ignore", category=UserWarning)
 
 def get_train_transforms(config):
     return A.Compose([
@@ -166,7 +168,9 @@ def setup_data_loader(data_dir, use_pickle, batch_size, num_workers, image_size,
         train_dataset,
         batch_size=batch_size,
         shuffle=True,
-        num_workers=num_workers
+        num_workers=num_workers,
+        prefetch_factor=2,
+        persistent_workers=True
     )
     val_loader = DataLoader(
         val_dataset,
@@ -214,6 +218,7 @@ def train_one_epoch(model, train_loader, val_loader, optimizer, scheduler, train
 
     if (epoch + 1) % save_interval == 0:
         if switch == False:
+            print(f"latest.pth has been updated")
             ckpt_fpath = osp.join(model_dir, 'latest.pth')
             torch.save(model.state_dict(), ckpt_fpath)
             if use_wandb:
@@ -358,22 +363,31 @@ def do_training(data_dir, model_dir, device, image_size, input_size, num_workers
     # 추가 학습
     print("\nStarting final training with swapped datasets...")
 
-    val_loader, train_loader, val_dataset, train_dataset = setup_data_loader(
-        data_dir=data_dir,
-        use_pickle=use_pickle,
+    train_dataset, val_dataset = val_dataset, train_dataset
+
+    train_loader = DataLoader(
+        train_dataset,
         batch_size=batch_size,
+        shuffle=True,
         num_workers=num_workers,
-        image_size=image_size,
-        input_size=input_size
+        prefetch_factor=2,
+        persistent_workers=True
     )
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers
+    )
+
+    train_num_batches = math.ceil(len(train_dataset) / batch_size)
+    val_num_batches = math.ceil(len(val_dataset) / batch_size)
 
     best_val_loss = float('inf')
     early_stopping_counter = 0
-    model.load_state_dict(torch.load(osp.join(model_dir, 'latest.pth')))
+    model.load_state_dict(torch.load(osp.join(model_dir, 'best.pth')))
 
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate * 0.1)
-
-    train_dataset, val_dataset = val_dataset, train_dataset
 
     for epoch in range(20):
         best_val_loss, early_stopping_counter, epoch_loss = train_one_epoch(
