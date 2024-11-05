@@ -288,7 +288,6 @@ def do_training(data_dir, model_dir, device, image_size, input_size, num_workers
         )
         
         config = wandb.config
-        config = wandb.config
         clahe_clip_limit = config.clahe_clip_limit
         clahe_grid_size = config.clahe_grid_size
         brightness_limit = config.brightness_limit
@@ -304,7 +303,7 @@ def do_training(data_dir, model_dir, device, image_size, input_size, num_workers
         
         train_transform = get_train_transforms(config)
     else:
-        train_transfrom = None
+        train_transform = None
 
     # 폴더가 없으면 만들기
     if not osp.exists(model_dir):
