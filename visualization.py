@@ -9,7 +9,7 @@ import argparse
 def parse_arg():
     parser = argparse.ArgumentParser(description='Output Visualiation')
     parser.add_argument('--save-dir',  help='save_dir path')
-    parser.add_argument('--inference-dir', help='inference_dir path (defualt path = output.csv)')
+    parser.add_argument('--inference-dir', help='inference_dir path')
     args = parser.parse_args()
     return args
 

@@ -8,6 +8,7 @@ import numpy as np
 import cv2
 import albumentations as A
 import pickle
+import torch.nn.functional as F
 from torch.utils.data import Dataset
 from shapely.geometry import Polygon
 from numba import njit
@@ -355,15 +356,15 @@ class SceneTextDataset(Dataset):
                 anno = json.load(f)
             for im in anno['images']:
                 # null 이나 "" 삭제하고 데이터 로드 하기
-                # valid_words = {}
-                # for word_id, word_info in anno['images'][im]['words'].items():
-                #     if word_info.get('transcription') not in [None, ""]:
-                #         valid_words[word_id] = word_info
+                valid_words = {}
+                for word_id, word_info in anno['images'][im]['words'].items():
+                    if word_info.get('transcription') not in [None, ""]:
+                        valid_words[word_id] = word_info
                 
-                # if valid_words:
-                #     total_anno['images'][im] = anno['images'][im]
-                #     total_anno['images'][im]['words'] = valid_words
-                total_anno['images'][im] = anno['images'][im] # null 이용 시에는 이거 주석처리하고 사용
+                if valid_words:
+                    total_anno['images'][im] = anno['images'][im]
+                    total_anno['images'][im]['words'] = valid_words
+                # total_anno['images'][im] = anno['images'][im] # null 이용 시에는 이거 주석처리하고 사용
 
         self.anno = total_anno
 
@@ -432,29 +433,85 @@ class SceneTextDataset(Dataset):
             funcs.append(A.ColorJitter())
         if self.normalize:
             funcs.append(A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)))
-        if self.custom_augmentation:
-            funcs.append(self.custom_augmentation)
-        transform = A.Compose(funcs)
+        if funcs:
+            transform = A.Compose(funcs)
+            image = transform(image=image)['image']
 
-        image = transform(image=image)['image']
+        if self.custom_augmentation:
+            transform = A.Compose(funcs)
+            image = transform(image=image)['image']
+        
         word_bboxes = np.reshape(vertices, (-1, 4, 2))
         roi_mask = generate_roi_mask(image, vertices, labels)
 
         return image, word_bboxes, roi_mask
 
-class PickleEASTDataset(Dataset):
-    def __init__(self, pickle_path):
-        """
-        Args:
-            pickle_path: pickle 파일의 경로 (EASTDataset으로 변환된 데이터가 저장된 경로)
-        """
+class PickleDataset(Dataset):
+    def __init__(
+        self,
+        pickle_path,
+        color_jitter=True,
+        normalize=True,
+        map_scale=0.5,
+        custom_augmentation=None  # custom_augmentation 파라미터 추가
+    ):
+        print(f"Loading pickle file from: {pickle_path}")
         with open(pickle_path, 'rb') as f:
             data = pickle.load(f)
-        self.samples = data['data']
-        self.image_fnames = data['image_fnames']
-    
+            
+        self.images = data['images']
+        self.score_maps = data['score_maps']
+        self.geo_maps = data['geo_maps']
+        self.roi_masks = data['roi_masks']
+        
+        print(f"Loaded {len(self.images)} samples")
+        
+        self.color_jitter = color_jitter
+        self.normalize = normalize
+        self.map_scale = map_scale
+        self.custom_augmentation = custom_augmentation  # custom_augmentation 저장
+        
     def __len__(self):
-        return len(self.samples)
+        return len(self.images)
     
     def __getitem__(self, idx):
-        return self.samples[idx]
+        image = self.images[idx]
+        score_map = self.score_maps[idx]
+        geo_map = self.geo_maps[idx]
+        roi_mask = self.roi_masks[idx]
+
+        # augmentation 적용
+        funcs = []
+        if self.color_jitter:
+            funcs.append(A.ColorJitter(
+                brightness=(0.0, 0.5),
+                contrast=(0.0, 0.5),
+                saturation=(0.0, 0.5),
+                hue=(-0.25, 0.25),
+                p=1.0
+            ))
+        if self.normalize:
+            funcs.append(A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)))
+        if funcs:
+            transform = A.Compose(funcs)
+            image = transform(image=image)["image"]
+
+        if self.custom_augmentation:
+            transform = self.custom_augmentation
+            image = transform(image=image)['image']
+
+        # ROI 마스크 크기 조정 및 차원 처리
+        mask_size = (int(image.shape[1] * self.map_scale), int(image.shape[0] * self.map_scale))
+        roi_mask = cv2.resize(roi_mask, dsize=mask_size, interpolation=cv2.INTER_NEAREST)
+        
+        # 차원 처리
+        if roi_mask.ndim == 2:
+            roi_mask = np.expand_dims(roi_mask, axis=2)
+
+        # 텐서 변환
+        image = torch.Tensor(image).permute(2, 0, 1)
+        score_map = torch.Tensor(score_map).permute(2, 0, 1)
+        geo_map = torch.Tensor(geo_map).permute(2, 0, 1)
+        roi_mask = torch.Tensor(roi_mask).permute(2, 0, 1)
+
+        return image, score_map, geo_map, roi_mask
