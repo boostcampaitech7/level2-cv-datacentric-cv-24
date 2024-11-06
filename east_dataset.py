@@ -5,7 +5,7 @@ import numpy as np
 import cv2
 from torch.utils.data import Dataset
 from numba import njit
-
+import albumentations as A
 @njit
 def nb_meshgrid(x, y):
     # Get the number of rows and columns
@@ -221,15 +221,24 @@ def generate_score_geo_maps(image, word_bboxes, map_scale=0.5):
 
     return score_map, geo_map
 
+def center_crop_horizontal(image, crop_width):
+    height, width, _ = image.shape
+    left = (width - crop_width) // 2
+    right = left + crop_width
+    return image[:, left:right] 
 
 class EASTDataset(Dataset):
     def __init__(self, dataset, map_scale=0.5, to_tensor=True):
         self.dataset = dataset
         self.map_scale = map_scale
         self.to_tensor = to_tensor
+        self.crop_width = 512
 
     def __getitem__(self, idx):
         image, word_bboxes, roi_mask = self.dataset[idx]
+
+        image = center_crop_horizontal(image, crop_width=self.crop_width)
+
         score_map, geo_map = generate_score_geo_maps(image, word_bboxes, map_scale=self.map_scale)
 
         mask_size = int(image.shape[0] * self.map_scale), int(image.shape[1] * self.map_scale)
@@ -237,6 +246,7 @@ class EASTDataset(Dataset):
         if roi_mask.ndim == 2:
             roi_mask = np.expand_dims(roi_mask, axis=2)
 
+        # 텐서 변환
         if self.to_tensor:
             image = torch.Tensor(image).permute(2, 0, 1)
             score_map = torch.Tensor(score_map).permute(2, 0, 1)

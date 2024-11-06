@@ -57,7 +57,7 @@ def preprocessing(
     total_anno = dict(images=dict())
     
     # json 파일을 읽는 부분
-    json_name = 'train_2.json'  # 항상 train.json을 읽습니다
+    json_name = 'train.json'  # 항상 train.json을 읽습니다
 
     for nation in lang_list:
         json_path = osp.join(root_dir, f'{nation}_receipt/ufo/{json_name}')
