@@ -22,6 +22,7 @@ from dataset import SceneTextDataset, PickleDataset
 from model import EAST
 from utils import AverageMeter, get_gt_bboxes, get_pred_bboxes
 from deteval import calc_deteval_metrics
+from torch.optim.lr_scheduler import (CosineAnnealingLR, CosineAnnealingWarmRestarts, LinearLR, SequentialLR)
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -37,7 +38,7 @@ def get_train_transforms(config):
             contrast_limit=config.constrast_limit,
             p=0.5
         ),
-        A.Normalize(mean=(0.7931, 0.7931, 0.7931), std=(0.1738, 0.1738, 0.1738), p=1.0)
+        A.Normalize(mean=(0.3, 0.3, 0.3), std=(0.1, 0.1, 0.1), p=1.0)
     ])
     
 def define_sweep_config():
@@ -275,6 +276,30 @@ def train_one_epoch(model, train_loader, val_loader, optimizer, scheduler, train
             
     return best_val_loss, early_stopping_counter, epoch_loss
 
+def get_advanced_scheduler(optimizer, num_epochs, num_warmup_epochs=5):
+    # Warm-up phase with LinearLR
+    warmup_scheduler = LinearLR(
+        optimizer,
+        start_factor=0.1,    # 초기 학습률은 설정값의 10%
+        end_factor=1.0,      # 웜업 후 원래 학습률로
+        total_iters=num_warmup_epochs
+    )
+    
+    # Main phase with CosineAnnealingWarmRestarts
+    cosine_scheduler = CosineAnnealingWarmRestarts(
+        optimizer,
+        T_0=20,             # 첫 번째 주기 길이
+        T_mult=2,           # 이후 주기는 2배씩 증가
+        eta_min=1e-6        # 최소 학습률
+    )
+    
+    # 두 스케줄러 결합
+    return SequentialLR(
+        optimizer,
+        schedulers=[warmup_scheduler, cosine_scheduler],
+        milestones=[num_warmup_epochs]
+    )
+
 def do_training(data_dir, model_dir, device, image_size, input_size, num_workers, batch_size,
                 learning_rate, max_epoch, save_interval, use_wandb, wandb_project, wandb_entity,
                 wandb_name, use_pickle, resume):
@@ -336,7 +361,8 @@ def do_training(data_dir, model_dir, device, image_size, input_size, num_workers
         model.load_state_dict(checkpoint)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[max_epoch // 2], gamma=0.1)
+    # scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[max_epoch // 2], gamma=0.1)
+    scheduler = get_advanced_scheduler(optimizer, max_epoch, 10)
 
     val_interval = 5
     best_val_loss = float('inf')
@@ -356,9 +382,6 @@ def do_training(data_dir, model_dir, device, image_size, input_size, num_workers
         if early_stopping_counter >= patience:
             print(f"Early stopping triggered after {epoch + 1} epochs")
             break
-
-    if use_wandb:
-        wandb.finish()
 
     # 추가 학습
     print("\nStarting final training with swapped datasets...")
