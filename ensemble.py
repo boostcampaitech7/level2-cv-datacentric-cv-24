@@ -26,16 +26,34 @@ def calculate_iou(poly1: Polygon, poly2: Polygon) -> float:
     except:
         return 0
 
-def non_max_suppression(boxes: List[Dict], scores: List[float], iou_threshold: float) -> List[int]:
-    indices = np.argsort(scores)[::-1]
-    keep = []
-    while indices.size > 0:
-        i = indices[0]
-        keep.append(i)
-        iou_list = [calculate_iou(polygon_from_points(boxes[i]['points']), 
-                                  polygon_from_points(boxes[j]['points'])) for j in indices[1:]]
-        indices = indices[1:][np.array(iou_list) <= iou_threshold]
-    return keep
+def weighted_box_fusion(boxes: List[Dict], scores: List[float], iou_threshold: float) -> List[Dict]:
+    sorted_indices = np.argsort(scores)[::-1]
+    boxes = [boxes[i] for i in sorted_indices]
+    scores = np.array([scores[i] for i in sorted_indices])
+    
+    final_boxes = []
+    used = np.zeros(len(boxes), dtype=bool)
+
+    for i in range(len(boxes)):
+        if used[i]:
+            continue
+        fused_boxes = [boxes[i]]
+        fused_scores = [scores[i]]
+        used[i] = True
+
+        for j in range(i+1, len(boxes)):
+            if used[j]:
+                continue
+            iou = calculate_iou(polygon_from_points(boxes[i]['points']), polygon_from_points(boxes[j]['points']))
+            if iou >= iou_threshold:
+                fused_boxes.append(boxes[j])
+                fused_scores.append(scores[j])
+                used[j] = True
+        
+        fused_box = weighted_average_boxes(fused_boxes, fused_scores)
+        final_boxes.append(fused_box)
+
+    return final_boxes
 
 def weighted_average_boxes(boxes: List[Dict], scores: List[float]) -> Dict:
     points = np.array([flatten_points(box['points']) for box in boxes])
@@ -55,11 +73,11 @@ def ensemble_results(result1: Dict, result2: Dict, iou_threshold: float = 0.5, s
         all_words = list(words1.values()) + list(words2.values())
         scores = [1] * len(words1) + [1] * len(words2)  # Assuming equal weights for both models
 
-        keep_indices = non_max_suppression(all_words, scores, iou_threshold)
+        fused_words = weighted_box_fusion(all_words, scores, iou_threshold)
 
-        for idx, keep_idx in enumerate(keep_indices):
-            if scores[keep_idx] > score_threshold:
-                ensembled_result['images'][image_name]['words'][str(idx)] = all_words[keep_idx]
+        for idx, fused_word in enumerate(fused_words):
+            if scores[idx] > score_threshold:
+                ensembled_result['images'][image_name]['words'][str(idx)] = fused_word
 
     return ensembled_result
 
