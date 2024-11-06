@@ -22,7 +22,7 @@ def create_east_pickle(data_dir, image_size_list=[2048], crop_size_list=[1024], 
             # Train용 SceneTextDataset 생성
             train_dataset = SceneTextDataset(
                 data_dir,
-                split='train_2',
+                split='train',
                 image_size=image_size,
                 crop_size=crop_size,
                 custom_augmentation=None,
@@ -30,7 +30,7 @@ def create_east_pickle(data_dir, image_size_list=[2048], crop_size_list=[1024], 
 
             val_dataset = SceneTextDataset(
                 data_dir,
-                split='train_2',
+                split='train',
                 image_size=image_size,
                 crop_size=crop_size,
                 custom_augmentation=None,

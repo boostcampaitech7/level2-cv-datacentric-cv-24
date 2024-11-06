@@ -80,7 +80,7 @@ def main(args):
                                 args.batch_size, split='test')
     ufo_result['images'].update(split_result['images'])
 
-    output_fname = 'output.csv'
+    output_fname = 'latest_output.csv'
     with open(osp.join(args.output_dir, output_fname), 'w') as f:
         json.dump(ufo_result, f, indent=4)
 
