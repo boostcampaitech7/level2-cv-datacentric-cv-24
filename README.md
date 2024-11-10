@@ -125,9 +125,9 @@ code
 <br>
 
 ### 최종 순위
-- 🥈 **Public LB : 9th / 24**
+- :trophy: **Public LB : 9th / 24**
 <img  alt="image" src="https://github.com/user-attachments/assets/4164ff58-b423-412f-8949-ca3283f0ddfb" height=150  width=900px>
 
-- 🥈 **Private LB : 9th / 24**
+- :trophy: **Private LB : 9th / 24**
 <img  alt="image" src="https://github.com/user-attachments/assets/bec59e29-7b4a-4410-9865-2fd0948b74f1" height=150  width=900px>
 
